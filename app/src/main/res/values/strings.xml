@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Etmaen</string>
+    <string name="full_name">Name</string>
+    <string name="contact_number">Contact phone number</string>
+    <string name="national_id">National ID</string>
+    <string name="upload">Upload</string>
+    <string name="train">Train</string>
+    <string name="classification">Result</string>
+    <string name="verify">Verify Person</string>
+    <string name="add_face">Add Face</string>
+    <string name="error_name">Name is required</string>
+    <string name="error_contact_number">Contact number is required</string>
+    <string name="uploadImages">Set your image</string>
+    <string name="msg_loading">Loading…</string>
+    <string name="create">Create Person</string>
+    <string name="name">Name</string>
+    <string name="address">Address</string>
+    <string name="phone_number">Phone number</string>
+    <string name="resend_message">RESEND MESSAGE</string>
+</resources>
