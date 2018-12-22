@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -98,6 +99,9 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     @BindView(R.id.recycler_view)
     RecyclerView recycler_view;
 
+    @BindView(R.id.progress)
+    ProgressBar progress;
+
     private static final int REQUEST_TAKE_PHOTO = 0;
     private static final int REQUEST_PICK_PHOTO = 2;
     private static final int CAMERA_PIC_REQUEST = 1111;
@@ -136,7 +140,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                 Glide.with(this).load(path).into(image_header);
             }
         }
-        initpDialog();
         mDb = AppDatabase.getInstance(getApplicationContext());
         recycler_view.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AddClassifierAdapter(this, this);
@@ -439,7 +442,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void submitDetails(String name, String contact, String nationalid){
-        showpDialog();
+        showProgress();
         Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
 
         // create part for file (photo, video, ...)
@@ -474,14 +477,14 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                         addFace();
                     }
                 } else {
-                    hidepDialog();
+                    hideProgress();
                     Toast.makeText(AddFaceActivity.this, "error uploading image", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<UploadServerResponse> call, Throwable t) {
-                hidepDialog();
+                hideProgress();
                 Toast.makeText(AddFaceActivity.this, "error uploading image " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -510,21 +513,21 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                         Toast.makeText(AddFaceActivity.this, "successfully created, please wait " + persistedId, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    hidepDialog();
+                    hideProgress();
                     Toast.makeText(AddFaceActivity.this, "error creation", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<AddFaceResponse> call, Throwable t) {
-                hidepDialog();
+                hideProgress();
                 Toast.makeText(AddFaceActivity.this, "error creation", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateRecord(String persistedFaceId) {
-        showpDialog();
+        showProgress();
         Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
         Call<Message> call = userService.updateWithPersistedId(m_uid, persistedFaceId);
 
@@ -535,18 +538,18 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                     if (response.body() != null) {
                         Message message = response.body();
                         String user_message = message.getMessage();
-                        hidepDialog();
+                        hideProgress();
                         Toast.makeText(AddFaceActivity.this, user_message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    hidepDialog();
+                    hideProgress();
                     Toast.makeText(AddFaceActivity.this, "error updating record", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Message> call, Throwable t) {
-                hidepDialog();
+                hideProgress();
                 Toast.makeText(AddFaceActivity.this, "error updating record", Toast.LENGTH_SHORT).show();
             }
         });
@@ -565,27 +568,18 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         refreshActivity();
     }
 
+    private void showProgress() {
+        progress.setVisibility(View.VISIBLE);
+    }
+
+    private void hideProgress() {
+        progress.setVisibility(View.GONE);
+    }
+
     private void refreshActivity(){
         recreate();
     }
 
-    protected void initpDialog() {
-
-        pDialog = new ProgressDialog(this);
-        pDialog.setMessage(getString(R.string.msg_loading));
-        pDialog.setCancelable(true);
-    }
-
-
-    protected void showpDialog() {
-
-        if (!pDialog.isShowing()) pDialog.show();
-    }
-
-    protected void hidepDialog() {
-
-        if (pDialog.isShowing()) pDialog.dismiss();
-    }
 
     @Override
     public void onItemClickListener(int itemId) {
