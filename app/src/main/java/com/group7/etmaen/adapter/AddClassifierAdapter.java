@@ -41,13 +41,12 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
         // Determine the values of the wanted data
         AddEntry imageEntry = mImageEntries.get(position);
         String name = imageEntry.getName();
-        String nationalid = imageEntry.getNationalid();
         String phonenumber = imageEntry.getPhonenumber();
         String images = imageEntry.getImage();
 
         //Set values
         holder.name.setText(name);
-        holder.particulars.setText(phonenumber + ", " + nationalid);
+        holder.particulars.setText(phonenumber + "");
 
         Glide.with(mContext)
                 .load(images)

@@ -27,9 +27,6 @@ public class AddEntry {
     @ColumnInfo(name = "phonenumber")
     private String phonenumber;
 
-    @ColumnInfo(name = "nationalid")
-    private String nationalid;
-
     @ColumnInfo(name = "persistedid")
     private String persistedid;
 
@@ -41,20 +38,18 @@ public class AddEntry {
 
 
     @Ignore
-    public AddEntry(String name, String phonenumber, String nationalid, String persistedid, String image, String uid) {
+    public AddEntry(String name, String phonenumber, String persistedid, String image, String uid) {
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.persistedid = persistedid;
         this.image = image;
         this.uid = uid;
     }
 
-    public AddEntry(int id, String name, String phonenumber, String nationalid, String persistedid, String image, String uid) {
+    public AddEntry(int id, String name, String phonenumber, String persistedid, String image, String uid) {
         this.id = id;
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.persistedid = persistedid;
         this.image = image;
         this.uid = uid;
@@ -82,14 +77,6 @@ public class AddEntry {
 
     public void setPhonenumber(String phonenumber) {
         this.phonenumber = phonenumber;
-    }
-
-    public String getNationalid() {
-        return nationalid;
-    }
-
-    public void setNationalid(String nationalid) {
-        this.nationalid = nationalid;
     }
 
     public void setPersistedid(String persistedid){ this.persistedid = persistedid; }

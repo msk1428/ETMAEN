@@ -21,9 +21,6 @@ public class FetchDetailsResponse implements Parcelable
     @SerializedName("phonenumber")
     @Expose
     private String phonenumber;
-    @SerializedName("nationalid")
-    @Expose
-    private String nationalid;
     @SerializedName("image")
     @Expose
     private String image;
@@ -55,7 +52,6 @@ public class FetchDetailsResponse implements Parcelable
         this.id = ((int) in.readValue((int.class.getClassLoader())));
         this.name = ((String) in.readValue((String.class.getClassLoader())));
         this.phonenumber = ((String) in.readValue((String.class.getClassLoader())));
-        this.nationalid = ((String) in.readValue((String.class.getClassLoader())));
         this.image = ((String) in.readValue((String.class.getClassLoader())));
         this.uid = ((String) in.readValue((String.class.getClassLoader())));
         this.persistedFaceId = ((String) in.readValue((String.class.getClassLoader())));
@@ -77,15 +73,13 @@ public class FetchDetailsResponse implements Parcelable
      * @param persistedFaceId
      * @param name
      * @param image
-     * @param nationalid
      */
-    public FetchDetailsResponse(boolean error, int id, String name, String phonenumber, String nationalid, String image, String uid, String persistedFaceId) {
+    public FetchDetailsResponse(boolean error, int id, String name, String phonenumber, String image, String uid, String persistedFaceId) {
         super();
         this.error = error;
         this.id = id;
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.image = image;
         this.uid = uid;
         this.persistedFaceId = persistedFaceId;
@@ -123,14 +117,6 @@ public class FetchDetailsResponse implements Parcelable
         this.phonenumber = phonenumber;
     }
 
-    public String getNationalid() {
-        return nationalid;
-    }
-
-    public void setNationalid(String nationalid) {
-        this.nationalid = nationalid;
-    }
-
     public String getImage() {
         return image;
     }
@@ -160,7 +146,6 @@ public class FetchDetailsResponse implements Parcelable
         dest.writeValue(id);
         dest.writeValue(name);
         dest.writeValue(phonenumber);
-        dest.writeValue(nationalid);
         dest.writeValue(image);
         dest.writeValue(uid);
         dest.writeValue(persistedFaceId);

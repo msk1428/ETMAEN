@@ -47,6 +47,7 @@
             android:name="android.support.PARENT_ACTIVITY"
             android:value=".VerifyActivity"/>
         </activity>
+        <activity android:name=".info.InfoActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

@@ -4,10 +4,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.group7.etmaen.info.InfoActivity;
+import com.group7.etmaen.utils.Constants;
+
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
-public class BaseActivity extends AppCompatActivity {
+import static com.group7.etmaen.utils.Constants.PHONE_NUMBER;
+
+public class BaseActivity extends AppCompatActivity{
     private CompositeDisposable compositeDisposable;
 
     @Override
@@ -25,4 +30,11 @@ public class BaseActivity extends AppCompatActivity {
     public void addDisposable(Disposable disposable){
         this.compositeDisposable.add(disposable);
     }
+
+   public void showWay() {
+       /*InfoActivity infoActivity = new InfoActivity();
+       String phone_number = infoActivity.PHONE_NUMBER;*/
+
+       String phone = PHONE_NUMBER;
+   }
 }

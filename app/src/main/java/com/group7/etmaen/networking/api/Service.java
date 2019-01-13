@@ -27,6 +27,8 @@ import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+import static com.group7.etmaen.utils.Constants.FACE_LIST_ID;
+
 /**
  * Created by delaroy on 9/13/18.
  */
@@ -41,8 +43,8 @@ public interface Service {
     @POST(Routes.VERIFY_IMAGE_SERVER)
     Call<VerifyUploadServerResponse> verifyImageUpload(@Part MultipartBody.Part file);
 
-    @POST(Routes.ADD_FACE + "{faceListId}" +  "/persistedFaces" )
-    Call<AddFaceResponse> addFace(@Path("faceListId") String faceListId, @Query("userData") String userData, @Body AddFace addFace);
+    @POST(Routes.ADD_FACE + FACE_LIST_ID +  "/persistedFaces")
+    Call<AddFaceResponse> addFace(@Query("userData") String userData, @Body AddFace addFace);
 
     @POST(Routes.DETECT_FACE)
     Call<List<DetectFaceResponse>> detectFace(@Query("returnFaceId") Boolean returnFaceId, @Query("returnFaceLandmarks") Boolean returnFaceLandmarks, @Body AddFace addFace);

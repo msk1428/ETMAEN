@@ -87,12 +87,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     @BindView(R.id.input_contact_number)
     EditText input_contact_number;
 
-    @BindView(R.id.national_id)
-    TextInputLayout national_id;
-
-    @BindView(R.id.input_national_id)
-    EditText input_national_id;
-
     @BindView(R.id.button_upload)
     Button button_upload;
 
@@ -192,7 +186,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     public void verifyData() {
         name.setError(null);
         contact_number.setError(null);
-        national_id.setError(null);
 
         if (input_name.length() == 0) {
 
@@ -203,18 +196,12 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             name.setError(getString(R.string.error_contact_number));
 
         } else {
-            String national_id;
             String name = input_name.getText().toString().trim();
             String contact_number = input_contact_number.getText().toString().trim();
-            national_id = input_national_id.getText().toString().trim();
-            if (national_id.isEmpty()){
-                national_id = "nil";
-            }
 
-            submitDetails(name, contact_number, national_id);
+            submitDetails(name, contact_number);
         }
     }
-
 
     private void launchImagePicker(){
         new MaterialDialog.Builder(this)
@@ -302,8 +289,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
 
         // Here we create the file using a prefix, a suffix and a directory
         File image = new File(storageDirectory, imageFileName + ".jpg");
-        // File image = File.createTempFile(imageFileName, ".jpg", storageDirectory);
-
         // Here the location is saved into the string mImageFileLocation
         Logger.getAnonymousLogger().info("File name and path set");
 
@@ -441,7 +426,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
     }
 
-    private void submitDetails(String name, String contact, String nationalid){
+    private void submitDetails(String name, String contact){
         showProgress();
         Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
 
@@ -451,12 +436,10 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         // create a map of data to pass along
         RequestBody authName = createPartFromString(name);
         RequestBody authContact = createPartFromString(contact);
-        RequestBody authNationalId = createPartFromString(nationalid);
 
         HashMap<String, RequestBody> map = new HashMap<>();
         map.put("name", authName);
         map.put("phonenumber", authContact);
-        map.put("nationalid", authNationalId);
 
         Call<UploadServerResponse> call = userService.createRecord(map, body);
         call.enqueue(new Callback<UploadServerResponse>() {
@@ -467,11 +450,10 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                         UploadServerResponse uploadServerResponse = response.body();
                         m_name = uploadServerResponse.getName();
                         m_phonenumber = uploadServerResponse.getPhonenumber();
-                        m_nationalid = uploadServerResponse.getNationalid();
                         m_imagename = uploadServerResponse.getImagename();
                         m_uid = uploadServerResponse.getUid();
 
-                        final AddEntry imageEntry = new AddEntry(m_name, m_phonenumber, m_nationalid, null, postPath, m_uid);
+                        final AddEntry imageEntry = new AddEntry(m_name, m_phonenumber, null, postPath, m_uid);
                         AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertClassifier(imageEntry));
                         emptyInputEditText();
                         addFace();
@@ -498,9 +480,9 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void addFace() {
-        String userData = m_name + "," + m_phonenumber + "," + m_nationalid;
+        String userData = m_name + "," + m_phonenumber;
         Service userService = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
-        Call<AddFaceResponse> call = userService.addFace(FACE_LIST_ID, userData,  addFaceModel());
+        Call<AddFaceResponse> call = userService.addFace(userData,  addFaceModel());
 
         call.enqueue(new Callback<AddFaceResponse>() {
             @Override
@@ -561,7 +543,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     private void emptyInputEditText() {
         input_name.setText("");
         input_contact_number.setText("");
-        input_national_id.setText("");
         image_header.setImageResource(R.color.colorPrimary);
         postPath.equals(null);
         path.equals(null);

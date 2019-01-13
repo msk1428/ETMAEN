@@ -18,6 +18,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.group7.etmaen.utils.Constants.HEADER_NAME;
+
 /**
  * Created by delaroy on 9/13/18.
  */
@@ -29,7 +31,7 @@ public class DataGenerator {
                 .writeTimeout(90, TimeUnit.SECONDS)
                 .cache(null);
 
-    static Gson gson = new GsonBuilder()
+    private static Gson gson = new GsonBuilder()
             .enableComplexMapKeySerialization()
             .serializeNulls()
             .setDateFormat(DateFormat.LONG)
@@ -61,7 +63,7 @@ public class DataGenerator {
         httpClient.addInterceptor(chain -> {
             Request original = chain.request();
             Request request = original.newBuilder()
-                    .header("Ocp-Apim-Subscription-Key", apikey)
+                    .header(HEADER_NAME, apikey)
                     .method(original.method(), original.body())
                     .build();
 

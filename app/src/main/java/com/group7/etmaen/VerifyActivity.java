@@ -161,6 +161,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
         viewModel.getTasks().observe(this, taskEntries -> mAdapter.setTasks(taskEntries));
     }
 
+    @SuppressLint("CheckResult")
     private void getLocation () {
         rxGps.lastLocation()
 
@@ -180,6 +181,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
 
     }
 
+    @SuppressLint("CheckResult")
     private void getStreet() {
         rxGps.locationLowPower()
                 .flatMapMaybe(rxGps::geocoding)
@@ -597,13 +599,12 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
                         FetchDetailsResponse fetchDetailsResponse = response.body();
                         String name = fetchDetailsResponse.getName();
                         String image = fetchDetailsResponse.getImage();
-                        String nationalid = fetchDetailsResponse.getNationalid();
                         String phonenumber = fetchDetailsResponse.getPhonenumber();
                         String persistedFaceId = fetchDetailsResponse.getPersistedFaceId();
 
                         sendMySMS(phonenumber, name + " is found around " + address);
 
-                        VerifiedEntry verifiedEntry = new VerifiedEntry(name, phonenumber, nationalid, persistedFaceId, image, address);
+                        VerifiedEntry verifiedEntry = new VerifiedEntry(name, phonenumber, persistedFaceId, image, address);
                         AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertVerifiedImage(verifiedEntry));
 
                         hidepDialog();

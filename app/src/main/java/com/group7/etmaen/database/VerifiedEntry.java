@@ -20,9 +20,6 @@ public class VerifiedEntry {
     @ColumnInfo(name = "phonenumber")
     private String phonenumber;
 
-    @ColumnInfo(name = "nationalid")
-    private String nationalid;
-
     @ColumnInfo(name = "persistedid")
     private String persistedid;
 
@@ -34,20 +31,18 @@ public class VerifiedEntry {
 
 
     @Ignore
-    public VerifiedEntry(String name, String phonenumber, String nationalid, String persistedid, String image, String address) {
+    public VerifiedEntry(String name, String phonenumber, String persistedid, String image, String address) {
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.persistedid = persistedid;
         this.image = image;
         this.address = address;
     }
 
-    public VerifiedEntry(int id, String name, String phonenumber, String nationalid, String persistedid, String image, String address) {
+    public VerifiedEntry(int id, String name, String phonenumber, String persistedid, String image, String address) {
         this.id = id;
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.persistedid = persistedid;
         this.image = image;
         this.address = address;
@@ -75,14 +70,6 @@ public class VerifiedEntry {
 
     public void setPhonenumber(String phonenumber) {
         this.phonenumber = phonenumber;
-    }
-
-    public String getNationalid() {
-        return nationalid;
-    }
-
-    public void setNationalid(String nationalid) {
-        this.nationalid = nationalid;
     }
 
     public void setPersistedid(String persistedid){ this.persistedid = persistedid; }

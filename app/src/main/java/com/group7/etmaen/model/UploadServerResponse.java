@@ -21,9 +21,6 @@ public class UploadServerResponse implements Parcelable
     @SerializedName("phonenumber")
     @Expose
     private String phonenumber;
-    @SerializedName("nationalid")
-    @Expose
-    private String nationalid;
     @SerializedName("imagename")
     @Expose
     private String imagename;
@@ -51,7 +48,6 @@ public class UploadServerResponse implements Parcelable
         this.message = ((String) in.readValue((String.class.getClassLoader())));
         this.name = ((String) in.readValue((String.class.getClassLoader())));
         this.phonenumber = ((String) in.readValue((String.class.getClassLoader())));
-        this.nationalid = ((String) in.readValue((String.class.getClassLoader())));
         this.imagename = ((String) in.readValue((String.class.getClassLoader())));
         this.uid = ((String) in.readValue((String.class.getClassLoader())));
     }
@@ -69,16 +65,14 @@ public class UploadServerResponse implements Parcelable
      * @param phonenumber
      * @param error
      * @param name
-     * @param nationalid
      * @param imagename
      */
-    public UploadServerResponse(boolean error, String message, String name, String phonenumber, String nationalid, String imagename, String uid) {
+    public UploadServerResponse(boolean error, String message, String name, String phonenumber, String imagename, String uid) {
         super();
         this.error = error;
         this.message = message;
         this.name = name;
         this.phonenumber = phonenumber;
-        this.nationalid = nationalid;
         this.imagename = imagename;
         this.uid = uid;
     }
@@ -115,14 +109,6 @@ public class UploadServerResponse implements Parcelable
         this.phonenumber = phonenumber;
     }
 
-    public String getNationalid() {
-        return nationalid;
-    }
-
-    public void setNationalid(String nationalid) {
-        this.nationalid = nationalid;
-    }
-
     public String getImagename() {
         return imagename;
     }
@@ -144,7 +130,6 @@ public class UploadServerResponse implements Parcelable
         dest.writeValue(message);
         dest.writeValue(name);
         dest.writeValue(phonenumber);
-        dest.writeValue(nationalid);
         dest.writeValue(imagename);
         dest.writeValue(uid);
     }
