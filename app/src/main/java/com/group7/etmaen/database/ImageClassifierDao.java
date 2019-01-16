@@ -32,6 +32,9 @@ public interface ImageClassifierDao {
     @Query("SELECT * FROM verifiedentry WHERE id = :id")
     LiveData<VerifiedEntry> loadVerifiedImageById(int id);
 
+    @Query("SELECT * FROM addentry WHERE persistedid = :persistedid")
+    AddEntry loadEntryByPersistedFaceId(String persistedid);
+
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void updateClassifier(AddEntry addEntry);
 

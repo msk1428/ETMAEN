@@ -61,28 +61,28 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Current location"
+                    android:text="@string/current_location"
                     style="@style/TextAppearance.AppCompat.Caption"/>
 
                 <TextView
                     android:id="@+id/tv_current_location"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Not available"
+                    android:text="@string/not_available"
                     style="@style/TextAppearance.AppCompat.Body1"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Current address"
+                    android:text="@string/current_location"
                     style="@style/TextAppearance.AppCompat.Caption"/>
 
                 <TextView
                     android:id="@+id/tv_current_address"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Not available"
+                    android:text="@string/not_available"
                     style="@style/TextAppearance.AppCompat.Body1"/>
 
             </LinearLayout>

@@ -54,7 +54,7 @@ public class VerifyAdapter extends RecyclerView.Adapter<VerifyAdapter.Classifier
         holder.address.setText(address);
 
         Glide.with(mContext)
-                .load(IMAGE + "uploads/" + images)
+                .load(images)
                 .into(holder.imageView);
     }
 

@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -57,12 +58,16 @@ import com.group7.etmaen.viewmodel.MainViewModel;
 import com.group7.etmaen.viewmodel.VerifyViewModel;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import butterknife.BindView;
@@ -120,6 +125,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
     private AppDatabase mDb;
     private VerifyAdapter mAdapter;
     private BroadcastReceiver sentStatusReceiver, deliveredStatusReceiver;
+    private  AddEntry addEntry;
 
     @SuppressLint("CheckResult")
     @Override
@@ -224,9 +230,9 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
         switch (view.getId()) {
             case R.id.button_verify:
                 if (postPath == null) {
-                    Toast.makeText(this, "please select an image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.select_image, Toast.LENGTH_SHORT).show();
                 } else {
-                    verifyData();
+                    addFace();
                 }
                 break;
             case R.id.selectImage:
@@ -250,7 +256,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 launchImagePicker();
             }else{
-                Toast.makeText(VerifyActivity.this, "Permission denied, the permissions are very important for the apps usage", Toast.LENGTH_SHORT).show();
+                Toast.makeText(VerifyActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -390,7 +396,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
             }
         }
         else if (resultCode != RESULT_CANCELED) {
-            Toast.makeText(this, "Sorry, there was an error!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.sorry_error, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -458,87 +464,56 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
         return mediaFile;
     }
 
-    @NonNull
-    private MultipartBody.Part prepareFilePart(String partName) {
-
-        File file = new File(postPath);
-
-        // create RequestBody instance from file
-        RequestBody requestFile =
-                RequestBody.create(
-                        MediaType.parse("*/*"),
-                        file
-                );
-
-        // MultipartBody.Part is used to send also the actual file name
-        return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
-    }
-
-    private void verifyData(){
-        showpDialog();
-        Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
-
-        // create part for file (photo, video, ...)
-        MultipartBody.Part body = prepareFilePart("sender");
-
-        Call<VerifyUploadServerResponse> call = userService.verifyImageUpload(body);
-        call.enqueue(new Callback<VerifyUploadServerResponse>() {
-            @Override
-            public void onResponse(Call<VerifyUploadServerResponse> call, Response<VerifyUploadServerResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        VerifyUploadServerResponse uploadServerResponse = response.body();
-                        m_imagename = uploadServerResponse.getImagename();
-                        addFace();
-                        getStreet();
-                        refreshActivity();
-                    }
-                } else {
-                    hidepDialog();
-                    Toast.makeText(VerifyActivity.this, "error uploading image", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<VerifyUploadServerResponse> call, Throwable t) {
-                hidepDialog();
-                Toast.makeText(VerifyActivity.this, "error uploading image " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private AddFace addFaceModel() {
-        AddFace addFace = new AddFace();
-        addFace.setUrl(IMAGE + m_imagename);
-        return addFace;
-    }
-
     private void addFace() {
-        Service userService = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
-        Call<List<DetectFaceResponse>> call = userService.detectFace(Boolean.TRUE, Boolean.FALSE,  addFaceModel());
+        showpDialog();
+        if (postPath == null || postPath.isEmpty()) {
+            hidepDialog();
+            return;
+        }
+        try {
+            InputStream in = new FileInputStream(new File(postPath));
+            byte[] buf;
+            try {
+                buf = new byte[in.available()];
+                while (in.read(buf) != -1);
+                RequestBody requestBody = RequestBody
+                        .create(MediaType.parse("application/octet-stream"), buf);
 
-        call.enqueue(new Callback<List<DetectFaceResponse>>() {
-            @Override
-            public void onResponse(Call<List<DetectFaceResponse>> call, Response<List<DetectFaceResponse>> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        List<DetectFaceResponse> addFaceResponse = response.body();
-                        faceId = addFaceResponse.get(0).getFaceId();
-                        findFace();
+                Service userService = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
+                Call<List<DetectFaceResponse>> call = userService.detectFace(Boolean.TRUE, Boolean.FALSE,  requestBody);
+
+                call.enqueue(new Callback<List<DetectFaceResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<DetectFaceResponse>> call, Response<List<DetectFaceResponse>> response) {
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                List<DetectFaceResponse> addFaceResponse = response.body();
+                                faceId = addFaceResponse.get(0).getFaceId();
+                                getStreet();
+                                refreshActivity();
+                                findFace();
+                            }
+                        } else {
+                            hidepDialog();
+                            Toast.makeText(VerifyActivity.this, R.string.error_creation, Toast.LENGTH_SHORT).show();
+                        }
                     }
-                } else {
-                    hidepDialog();
-                    Toast.makeText(VerifyActivity.this, "error creation", Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<List<DetectFaceResponse>> call, Throwable t) {
+                    @Override
+                    public void onFailure(Call<List<DetectFaceResponse>> call, Throwable t) {
+                        hidepDialog();
+                        Toast.makeText(VerifyActivity.this, R.string.error_creation, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } catch (IOException e) {
                 hidepDialog();
-                Toast.makeText(VerifyActivity.this, "error creation", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
-        });
+        } catch (FileNotFoundException e) {
+            hidepDialog();
+            e.printStackTrace();
+        }
     }
 
     private FindSimilar findSimilar() {
@@ -565,71 +540,61 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
                         List<FindSimilarResponse> findSimilarResponses = response.body();
                         if (findSimilarResponses.isEmpty() || findSimilarResponses == null) {
                             hidepDialog();
-                            Toast.makeText(VerifyActivity.this, "no face matching from records", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(VerifyActivity.this, R.string.no_face_matching, Toast.LENGTH_SHORT).show();
                         } else {
                             String persistedFaceId = findSimilarResponses.get(0).getPersistedFaceId();
                             fetchDetails(persistedFaceId);
+                            hidepDialog();
+                            Toast.makeText(VerifyActivity.this, R.string.person_found, Toast.LENGTH_SHORT).show();
                         }
 
                     }
                 }else {
                     hidepDialog();
-                    Toast.makeText(VerifyActivity.this, "error finding face", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(VerifyActivity.this, R.string.error_find_face, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<FindSimilarResponse>> call, Throwable t) {
                 hidepDialog();
-                Toast.makeText(VerifyActivity.this, "error finding face ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(VerifyActivity.this, R.string.error_find_face, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void fetchDetails(String persistedFaceId) {
-        Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
-        Call<FetchDetailsResponse> call = userService.fetchDetails(persistedFaceId);
 
-        call.enqueue(new Callback<FetchDetailsResponse>() {
-            @Override
-            public void onResponse(Call<FetchDetailsResponse> call, Response<FetchDetailsResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        String address = addressText.getText().toString();
-                        FetchDetailsResponse fetchDetailsResponse = response.body();
-                        String name = fetchDetailsResponse.getName();
-                        String image = fetchDetailsResponse.getImage();
-                        String phonenumber = fetchDetailsResponse.getPhonenumber();
-                        String persistedFaceId = fetchDetailsResponse.getPersistedFaceId();
+        Runnable r = () -> {
+            addEntry = mDb.imageClassifierDao().loadEntryByPersistedFaceId(persistedFaceId);
+        };
+        Thread thread = new Thread(r);
+        thread.start();
 
-                        sendMySMS(phonenumber, name + " is found around " + address);
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            if (addEntry != null) {
+                String name = addEntry.getName();
+                String image = addEntry.getImage();
+                String phonenumber = addEntry.getPhonenumber();
+                String address = addressText.getText().toString();
 
-                        VerifiedEntry verifiedEntry = new VerifiedEntry(name, phonenumber, persistedFaceId, image, address);
-                        AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertVerifiedImage(verifiedEntry));
+                sendMySMS(phonenumber, name + " " + R.string.is_found + address);
 
-                        hidepDialog();
-
-                        Toast.makeText(VerifyActivity.this, "person verified with name: " + name, Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    hidepDialog();
-                    Toast.makeText(VerifyActivity.this, "error verifying", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<FetchDetailsResponse> call, Throwable t) {
+                VerifiedEntry verifiedEntry = new VerifiedEntry(name, phonenumber, persistedFaceId, image, address);
+                AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertVerifiedImage(verifiedEntry));
                 hidepDialog();
-                Toast.makeText(VerifyActivity.this, "error verifying", Toast.LENGTH_SHORT).show();
             }
-        });
+
+        }, 2000);
+
     }
 
     public void sendMySMS(String phone, String message) {
 
         //Check if the phoneNumber is empty
-        if (phone.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Please Enter a Valid Phone Number", Toast.LENGTH_SHORT).show();
+        if (phone.isEmpty() || phone == null) {
+            Toast.makeText(getApplicationContext(), R.string.valid_number, Toast.LENGTH_SHORT).show();
         } else {
 
             SmsManager sms = SmsManager.getDefault();

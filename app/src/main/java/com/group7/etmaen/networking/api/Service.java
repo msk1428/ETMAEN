@@ -17,6 +17,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Multipart;
@@ -44,10 +45,10 @@ public interface Service {
     Call<VerifyUploadServerResponse> verifyImageUpload(@Part MultipartBody.Part file);
 
     @POST(Routes.ADD_FACE + FACE_LIST_ID +  "/persistedFaces")
-    Call<AddFaceResponse> addFace(@Query("userData") String userData, @Body AddFace addFace);
+    Call<AddFaceResponse> addFace(@Query("userData") String userData, @Body RequestBody photo);
 
     @POST(Routes.DETECT_FACE)
-    Call<List<DetectFaceResponse>> detectFace(@Query("returnFaceId") Boolean returnFaceId, @Query("returnFaceLandmarks") Boolean returnFaceLandmarks, @Body AddFace addFace);
+    Call<List<DetectFaceResponse>> detectFace(@Query("returnFaceId") Boolean returnFaceId, @Query("returnFaceLandmarks") Boolean returnFaceLandmarks, @Body RequestBody photo);
 
     @FormUrlEncoded
     @PUT(Routes.UPDATE_RECORD + "/{uid}")
@@ -59,4 +60,6 @@ public interface Service {
     @POST(Routes.FIND_SIMILAR)
     Call<List<FindSimilarResponse>> fetchSimilar(@Body FindSimilar findSimilar) ;
 
+    @DELETE(Routes.DELETE_FACE + "persistedFaces/" + "{persistedFaceId}")
+    Call<Void> deleteFace(@Path("persistedFaceId") String persistedFaceId);
 }

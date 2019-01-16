@@ -22,6 +22,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -45,7 +46,10 @@ import com.group7.etmaen.viewmodel.AppExecutors;
 import com.group7.etmaen.viewmodel.MainViewModel;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -139,7 +143,67 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         adapter = new AddClassifierAdapter(this, this);
         recycler_view.setAdapter(adapter);
 
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            // Called when a user swipes left or right on a ViewHolder
+            @Override
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                if (viewHolder instanceof AddClassifierAdapter.ClassifierViewHolder) {
+                    int position = viewHolder.getAdapterPosition();
+                    List<AddEntry> entryList = adapter.getClassifier();
+                    String persistedId = entryList.get(position).getPersistedid();
+                    AddEntry db_position = entryList.get(position);
+
+                    // remove the item from recycler view
+                    adapter.removeItem(viewHolder.getAdapterPosition());
+
+                    deleteRecord(persistedId, db_position, position);
+                }
+            }
+        }).attachToRecyclerView(recycler_view);
+
         setupViewModel();
+    }
+
+    private void deleteRecord(String persistedid, AddEntry position, int position1) {
+        try{
+            showProgress();
+            Service service = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
+            Call<Void> call = service.deleteFace(persistedid);
+
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(AddFaceActivity.this, R.string.record_deleted_success, Toast.LENGTH_SHORT).show();
+                        AppExecutors.getInstance().diskIO().execute(() -> {
+                            mDb.imageClassifierDao().deleteClassifier(position);
+                        });
+                        hideProgress();
+                    } else {
+                        hideProgress();
+                        adapter.restoreItem(position, position1);
+                        Toast.makeText(AddFaceActivity.this, R.string.error_deleting, Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    hideProgress();
+                    adapter.restoreItem(position, position1);
+                    Toast.makeText(AddFaceActivity.this, R.string.error_deleting, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch(Exception e) {
+            hideProgress();
+            adapter.restoreItem(position, position1);
+            Toast.makeText(AddFaceActivity.this, R.string.error_deleting, Toast.LENGTH_SHORT).show();
+
+        }
     }
 
     private void setupViewModel() {
@@ -152,7 +216,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.button_upload:
                 if (postPath == null) {
-                    Toast.makeText(this, "please select an image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.select_image, Toast.LENGTH_SHORT).show();
                 } else {
                     verifyData();
                 }
@@ -178,7 +242,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 launchImagePicker();
             }else{
-                Toast.makeText(AddFaceActivity.this, "Permission denied, the permissions are very important for the apps usage", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddFaceActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -199,7 +263,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             String name = input_name.getText().toString().trim();
             String contact_number = input_contact_number.getText().toString().trim();
 
-            submitDetails(name, contact_number);
+            addFace(name, contact_number);
         }
     }
 
@@ -336,7 +400,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
         else if (resultCode != RESULT_CANCELED) {
-            Toast.makeText(this, "Sorry, there was an error!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.sorry_error, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -404,137 +468,62 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         return mediaFile;
     }
 
-    @NonNull
-    private RequestBody createPartFromString(String descriptionString) {
-        return RequestBody.create(
-                okhttp3.MultipartBody.FORM, descriptionString);
-    }
-
-    @NonNull
-    private MultipartBody.Part prepareFilePart(String partName) {
-
-        File file = new File(postPath);
-
-        // create RequestBody instance from file
-        RequestBody requestFile =
-                RequestBody.create(
-                        MediaType.parse("*/*"),
-                        file
-                );
-
-        // MultipartBody.Part is used to send also the actual file name
-        return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
-    }
-
-    private void submitDetails(String name, String contact){
+    private void addFace(String name, String phonenumber) {
         showProgress();
-        Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
+        if (postPath == null || postPath.isEmpty()) {
+            hideProgress();
+            return;
+        }
+        String userData = name + "," + phonenumber;
 
-        // create part for file (photo, video, ...)
-        MultipartBody.Part body = prepareFilePart("sender");
+        try {
+            InputStream in = new FileInputStream(new File(postPath));
+            byte[] buf;
+            try {
+                buf = new byte[in.available()];
+                while (in.read(buf) != -1);
+                RequestBody requestBody = RequestBody
+                        .create(MediaType.parse("application/octet-stream"), buf);
 
-        // create a map of data to pass along
-        RequestBody authName = createPartFromString(name);
-        RequestBody authContact = createPartFromString(contact);
+                Service userService = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
+                Call<AddFaceResponse> call = userService.addFace(userData, requestBody);
 
-        HashMap<String, RequestBody> map = new HashMap<>();
-        map.put("name", authName);
-        map.put("phonenumber", authContact);
+                call.enqueue(new Callback<AddFaceResponse>() {
+                    @Override
+                    public void onResponse(Call<AddFaceResponse> call, Response<AddFaceResponse> response) {
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                AddFaceResponse addFaceResponse = response.body();
+                                String persistedId = addFaceResponse.getPersistedFaceId();
 
-        Call<UploadServerResponse> call = userService.createRecord(map, body);
-        call.enqueue(new Callback<UploadServerResponse>() {
-            @Override
-            public void onResponse(Call<UploadServerResponse> call, Response<UploadServerResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        UploadServerResponse uploadServerResponse = response.body();
-                        m_name = uploadServerResponse.getName();
-                        m_phonenumber = uploadServerResponse.getPhonenumber();
-                        m_imagename = uploadServerResponse.getImagename();
-                        m_uid = uploadServerResponse.getUid();
-
-                        final AddEntry imageEntry = new AddEntry(m_name, m_phonenumber, null, postPath, m_uid);
-                        AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertClassifier(imageEntry));
-                        emptyInputEditText();
-                        addFace();
+                                final AddEntry imageEntry = new AddEntry(name, phonenumber, persistedId, postPath, "");
+                                AppExecutors.getInstance().diskIO().execute(() -> mDb.imageClassifierDao().insertClassifier(imageEntry));
+                                emptyInputEditText();
+                                hideProgress();
+                                Toast.makeText(AddFaceActivity.this, R.string.successfully_created, Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            hideProgress();
+                            Toast.makeText(AddFaceActivity.this, R.string.error_creation, Toast.LENGTH_SHORT).show();
+                        }
                     }
-                } else {
-                    hideProgress();
-                    Toast.makeText(AddFaceActivity.this, "error uploading image", Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<UploadServerResponse> call, Throwable t) {
-                hideProgress();
-                Toast.makeText(AddFaceActivity.this, "error uploading image " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private AddFace addFaceModel() {
-        AddFace addFace = new AddFace();
-        addFace.setUrl(IMAGE + m_imagename);
-        return addFace;
-    }
-
-    private void addFace() {
-        String userData = m_name + "," + m_phonenumber;
-        Service userService = DataGenerator.createService(Service.class, BuildConfig.COGNITIVE_SERVICE_API, AZURE_BASE_URL);
-        Call<AddFaceResponse> call = userService.addFace(userData,  addFaceModel());
-
-        call.enqueue(new Callback<AddFaceResponse>() {
-            @Override
-            public void onResponse(Call<AddFaceResponse> call, Response<AddFaceResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        AddFaceResponse addFaceResponse = response.body();
-                        String persistedId = addFaceResponse.getPersistedFaceId();
-                        updateRecord(persistedId);
-                        Toast.makeText(AddFaceActivity.this, "successfully created, please wait " + persistedId, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    hideProgress();
-                    Toast.makeText(AddFaceActivity.this, "error creation", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<AddFaceResponse> call, Throwable t) {
-                hideProgress();
-                Toast.makeText(AddFaceActivity.this, "error creation", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void updateRecord(String persistedFaceId) {
-        showProgress();
-        Service userService = DataGenerator.createService(Service.class, SERVER_BASE_URL);
-        Call<Message> call = userService.updateWithPersistedId(m_uid, persistedFaceId);
-
-        call.enqueue(new Callback<Message>() {
-            @Override
-            public void onResponse(Call<Message> call, Response<Message> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        Message message = response.body();
-                        String user_message = message.getMessage();
+                    @Override
+                    public void onFailure(Call<AddFaceResponse> call, Throwable t) {
                         hideProgress();
-                        Toast.makeText(AddFaceActivity.this, user_message, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    hideProgress();
-                    Toast.makeText(AddFaceActivity.this, "error updating record", Toast.LENGTH_SHORT).show();
-                }
-            }
+                        Toast.makeText(AddFaceActivity.this, R.string.error_creation, Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void onFailure(Call<Message> call, Throwable t) {
+                    }
+                });
+
+            } catch (IOException e) {
                 hideProgress();
-                Toast.makeText(AddFaceActivity.this, "error updating record", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
-        });
+        } catch (FileNotFoundException e) {
+            hideProgress();
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -11,5 +11,5 @@ public interface Routes {
     String FETCH_DETAILS = "etmaen/fetchdetails/";
     String DETECT_FACE = "detect";
     String FIND_SIMILAR = "findsimilars";
-
+    String DELETE_FACE = "facelists/etmaenfacelist/";
 }

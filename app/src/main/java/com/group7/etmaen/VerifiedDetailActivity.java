@@ -111,7 +111,7 @@ public class VerifiedDetailActivity extends AppCompatActivity {
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 sendMessage();
             }else{
-                Toast.makeText(VerifiedDetailActivity.this, "Permission denied, the permissions are very important for the apps usage", Toast.LENGTH_SHORT).show();
+                Toast.makeText(VerifiedDetailActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -131,14 +131,14 @@ public class VerifiedDetailActivity extends AppCompatActivity {
         phone_value.setText(phonenumber);
 
         Glide.with(getApplicationContext())
-                .load(IMAGE + "uploads/" + image)
+                .load(image)
                 .into(classifier_image);
 
     }
 
     private void sendMessage() {
 
-        sendMySMS(phonenumber, name + " is found around " + address);
+        sendMySMS(phonenumber, name + " " + R.string.is_found + address);
 
     }
 
@@ -146,7 +146,7 @@ public class VerifiedDetailActivity extends AppCompatActivity {
 
         //Check if the phoneNumber is empty
         if (phone.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Please Enter a Valid Phone Number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.valid_number, Toast.LENGTH_SHORT).show();
         } else {
 
             SmsManager sms = SmsManager.getDefault();

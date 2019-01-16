@@ -1,6 +1,7 @@
 package com.group7.etmaen.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,8 +29,9 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
         mItemClickListener = listener;
     }
 
+    @NonNull
     @Override
-    public ClassifierViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ClassifierViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext)
                 .inflate(R.layout.add_classification_item, parent, false);
 
@@ -37,7 +39,7 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
     }
 
     @Override
-    public void onBindViewHolder(ClassifierViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ClassifierViewHolder holder, int position) {
         // Determine the values of the wanted data
         AddEntry imageEntry = mImageEntries.get(position);
         String name = imageEntry.getName();
@@ -46,7 +48,7 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
 
         //Set values
         holder.name.setText(name);
-        holder.particulars.setText(phonenumber + "");
+        holder.particulars.setText("" + phonenumber);
 
         Glide.with(mContext)
                 .load(images)
@@ -74,6 +76,17 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
         notifyDataSetChanged();
     }
 
+    public void removeItem(int position) {
+        mImageEntries.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreItem(AddEntry item, int position) {
+        mImageEntries.add(position, item);
+        // notify item added by position
+        notifyItemInserted(position);
+    }
+
     public interface ItemClickListener {
         void onItemClickListener(int itemId);
     }
@@ -85,9 +98,9 @@ public class AddClassifierAdapter extends RecyclerView.Adapter<AddClassifierAdap
         TextView particulars;
         TextView status;
         CircleImageView imageView;
-        public RelativeLayout viewForeground;
+        RelativeLayout viewForeground;
 
-        public ClassifierViewHolder(View itemView) {
+        ClassifierViewHolder(View itemView) {
             super(itemView);
 
             name = itemView.findViewById(R.id.name);

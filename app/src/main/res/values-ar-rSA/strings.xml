@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Etmaen</string>
+    <string name="full_name">Name</string>
+    <string name="contact_number">Contact phone number</string>
+    <string name="national_id">National ID</string>
+    <string name="upload">Upload</string>
+    <string name="train">Train</string>
+    <string name="classification">Result</string>
+    <string name="verify">Verify Person</string>
+    <string name="add_face">Add Face</string>
+    <string name="error_name">Name is required</string>
+    <string name="error_contact_number">Contact number is required</string>
+    <string name="uploadImages">Set your image</string>
+    <string name="msg_loading">Loading…</string>
+    <string name="create">Create Person</string>
+    <string name="name">Name</string>
+    <string name="address">Address</string>
+    <string name="phone_number">Phone number</string>
+    <string name="resend_message">RESEND MESSAGE</string>
+    <string name="added_items">Added items</string>
+    <string name="current_location">Current location</string>
+    <string name="not_available">Not available</string>
+    <string name="select_image">please select an image</string>
+    <string name="permission_denied">Permission denied, the permissions are very important for the apps usage</string>
+    <string name="sorry_error">Sorry, there was an error!</string>
+    <string name="error_creation">error creation</string>
+    <string name="no_face_matching">no face matching from records</string>
+    <string name="person_found">person found</string>
+    <string name="error_find_face">error finding face</string>
+    <string name="is_found">is found around </string>
+    <string name="valid_number">Please Enter a Valid Phone Number</string>
+    <string name= "record_deleted_success">record deleted successfully</string>
+    <string name="error_deleting">error deleting record</string>
+    <string name="successfully_created">successfully created</string>
+</resources>

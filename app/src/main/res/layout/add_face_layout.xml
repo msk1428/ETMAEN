@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:layout_below="@id/button_upload"
-                android:text="Added Items"/>
+                android:text="@string/added_items"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
