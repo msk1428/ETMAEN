@@ -2,7 +2,6 @@
     <string name="app_name" translatable="true">Etmaen</string>
     <string name="full_name" translatable="true">Name</string>
     <string name="contact_number" translatable="true">Contact phone number</string>
-    <string name="national_id" translatable="true">National ID</string>
     <string name="upload" translatable="true">Upload</string>
     <string name="train" translatable="true">Train</string>
     <string name="classification" translatable="true">Result</string>
