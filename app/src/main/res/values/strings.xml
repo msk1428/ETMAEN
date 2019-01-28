@@ -32,4 +32,12 @@
     <string name= "record_deleted_success" translatable="true">record deleted successfully</string>
     <string name="error_deleting" translatable="true">error deleting record</string>
     <string name="successfully_created" translatable="true">successfully created</string>
+    <string name="action_settings" translatable="false">Settings</string>
+    <string name="title_activity_settings" translatable="false">Settings</string>
+    <string name="description" translatable="false">ETMAEN is an application to find lost people the application just requires them to take a picture of the lost person\'s, and then the application will deal with the picture and implement face recognition method then send a text message include the location of the lost person to guardians. It also allows you to record people who are afraid of losing them</string>
+    <string name="about_us" translatable="false">Welcome to ETMAEN application, at ETMAEN  We are a small group of developers We believe the technology can chenge and solve every problem SO ,we want to solve a big problem in the community .when using the traditional methods to find a loosing person may take  time and effort alot  , in ETMAEN app It aims to reduce the loss of people in public places and save time and effort</string>
+    <string name="pref_header_about" translatable="false">About</string>
+    <string name="title_version" translatable="false">Version</string>
+    <string name="app_version" translatable="false">1.0</string>
+    <string name="privacy_policy" translatable="false">Privacy Policy</string>
 </resources>
