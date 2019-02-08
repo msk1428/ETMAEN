@@ -119,7 +119,8 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     private String m_name, m_phonenumber, m_nationalid, m_imagename, m_uid;
     private AppDatabase mDb;
     private AddClassifierAdapter adapter;
-
+    private String[] uploadImages;
+    private int[] itemIds ;
 
 
     @Override
@@ -135,6 +136,8 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
 
         selectImage.setOnClickListener(this);
         button_upload.setOnClickListener(this);
+        uploadImages = new String[] {getString(R.string.pick_gallery),getString(R.string.click_camera),getString(R.string.remove)} ;
+        itemIds= new int[]{0, 1, 2};
 
         if (savedInstanceState != null) {
             if (path != null) {
@@ -275,8 +278,8 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     private void launchImagePicker(){
         new MaterialDialog.Builder(this)
                 .title(R.string.uploadImages)
-                .items(R.array.uploadImages)
-                .itemsIds(R.array.itemIds)
+                .items(uploadImages)
+                .itemsIds(itemIds)
                 .itemsCallback((dialog, view, which, text) -> {
                     switch (which) {
                         case 0:

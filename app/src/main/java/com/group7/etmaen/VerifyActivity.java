@@ -107,6 +107,7 @@ public class VerifyActivity extends BaseActivity implements View.OnClickListener
     @BindView(R.id.recycler_view)
     RecyclerView recycler_view;
 
+
     private static final int REQUEST_TAKE_PHOTO = 0;
     private static final int REQUEST_PICK_PHOTO = 2;
     private static final int CAMERA_PIC_REQUEST = 1111;
